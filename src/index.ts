@@ -37,20 +37,32 @@ export function globalVariable(options: GlobalVariableOptions = {}) {
       } else {
         viteEnv = parseEnv(viteEnv)
       }
-      console.log(env)
     },
     closeBundle() {
       const variable = viteEnv
       const fileName = isFunction(configurationFileName) ? configurationFileName(userContext, userEnv) : configurationFileName!
       const globalVariableName = isFunction(configurationName) ? configurationName(userContext, userEnv) : configurationName! || getGlobalConfigName(userEnv)
       createConfig({ options: { variable, fileName, globalVariableName }, writePath: userContext.build?.outDir || getRootPath('dist') })
+    },
+    transformIndexHtml(html) {
+      const configFilePath = `${userContext.base || '/'}${configurationFileName}?v=${Date.now()}`
+      return {
+        html: html,
+        tags: [
+          {
+            tag: 'script',
+            attrs: { src: configFilePath },
+            injectTo: 'head-prepend'
+          }
+        ]
+      }
     }
   } as Plugin
 }
 
 
 function createConfig(params: CreateConfigParams) {
-  const { options } = params
+  const { options, writePath } = params
   const { variable, globalVariableName, fileName } = options
   try {
     const windowConf = `window.${globalVariableName}`;
@@ -63,7 +75,7 @@ function createConfig(params: CreateConfigParams) {
       });
     `.replace(/\s/g, '');
 
-    writeFileSync(getRootPath(`dist/${fileName}`), configStr, { encoding: 'utf-8' })
+    writeFileSync(getRootPath(`${writePath}/${fileName}`), configStr, { encoding: 'utf-8' })
   } catch (error) {
 
   }

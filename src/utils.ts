@@ -21,25 +21,26 @@ export function isFunction(val: unknown): val is Function {
   return typeof val === 'function';
 }
 
-export function useLog() {
+export function useLog(prefix: string = `[${pkg.name} ${pkg.version}]`) {
   const log = console.log
-  const { green, red, yellow, white } = chalk
+  const { green, red, yellow, white, blue } = chalk
 
+  const compose = (string: string) => `${blue(prefix)} ${string}`
 
   const error = (text: string) => {
-    log(red(text))
+    log(compose(red(text)))
   }
 
   const success = (text: string) => {
-    log(green(text))
+    log(compose(green(text)))
   }
 
   const info = (text: string) => {
-    log(white(text))
+    log(compose(white(text)))
   }
 
   const warning = (text: string) => {
-    log(yellow(text))
+    log(compose(yellow(text)))
   }
 
   return {
@@ -50,16 +51,26 @@ export function useLog() {
   }
 }
 
+
+
 export function parseEnv(env: Record<string, string>) {
   const res: Record<string, string> = {}
   const { error } = useLog()
   Object.keys(env).forEach(key => {
     try {
+      const value = env[key]
+      const firstVal = value.at(0)
+      const endVal = value.at(-1)
+      const isSingleQuoted = firstVal === "'" && endVal === "'"
+      const isDoubleQuoted = firstVal === '"' && endVal === '"'
+
+      // if ()
+
       res[key] = JSON.parse(env[key])
     } catch (err) {
-      error(err as string)
+      error(`Check that your environment variables(${key}) follow JSON syntax rules. More infomation(${err as string})`)
     }
-  }) 
-   
+  })
+
   return res
 }

@@ -4,8 +4,8 @@ export default defineConfig({
   entry: ['./src/main.ts'],
   format: ['esm'],
   dts: true,
-  watch: true,
   outDir: 'dist',
   clean: true,
+  sourcemap: true,
   external: ['vite']
 })

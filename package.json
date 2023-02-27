@@ -2,12 +2,25 @@
   "name": "@wry-smile/vite-plugin-global-variable",
   "type": "module",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "vite-plugin, global variable",
   "scripts": {
-    "dev": "tsup",
+    "dev": "tsup --watch",
+    "build": "tsup",
     "playground": "cd ./playground/vue3 && npm run dev"
   },
+  "main": "./dist/main.js",
+  "module": "./dist/main.js",
+  "types": "./dist/main.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/main.js",
+      "types": "./dist/main.d.ts"
+    },
+    "./*": "./*"
+  },
+  "files": [
+    "dist"
+  ],
   "keywords": [],
   "author": "",
   "license": "MIT",
