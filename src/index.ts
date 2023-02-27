@@ -10,7 +10,7 @@ const defaultOptions: GlobalVariableOptions = {
   configurationFileName: CONFIGURATION_FILE_NAME,
 }
 
-const { error } = useLog()
+const { error, info } = useLog()
 
 export function globalVariable(options: GlobalVariableOptions = {}) {
 
@@ -46,6 +46,7 @@ export function globalVariable(options: GlobalVariableOptions = {}) {
     },
     transformIndexHtml(html) {
       const configFilePath = `${userContext.base || '/'}${configurationFileName}?v=${Date.now()}`
+      info(`Begin injecting ${configurationFileName}.js into index.html.`)
       return {
         html: html,
         tags: [

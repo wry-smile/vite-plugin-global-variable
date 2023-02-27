@@ -1,6 +1,6 @@
 import { resolve } from "path"
 import chalk from 'chalk'
-import pkg from '../package.json'
+import { name, version } from '../package.json'
 
 export function getRootPath(...dir: string[]) {
   return resolve(process.cwd(), ...dir);
@@ -21,7 +21,7 @@ export function isFunction(val: unknown): val is Function {
   return typeof val === 'function';
 }
 
-export function useLog(prefix: string = `[${pkg.name} ${pkg.version}]`) {
+export function useLog(prefix: string = `[${name} ${version}]`) {
   const log = console.log
   const { green, red, yellow, white, blue } = chalk
 
@@ -51,24 +51,28 @@ export function useLog(prefix: string = `[${pkg.name} ${pkg.version}]`) {
   }
 }
 
-
+enum BoolString {
+  TRUE = 'true',
+  FALSE = 'false'
+}
 
 export function parseEnv(env: Record<string, string>) {
   const res: Record<string, string> = {}
   const { error } = useLog()
+  const isIntReg = /\d/g
+  const isObjectReg = /[\[\]\{\}]/g
+
   Object.keys(env).forEach(key => {
     try {
       const value = env[key]
-      const firstVal = value.at(0)
-      const endVal = value.at(-1)
-      const isSingleQuoted = firstVal === "'" && endVal === "'"
-      const isDoubleQuoted = firstVal === '"' && endVal === '"'
 
-      // if ()
+      if (value === BoolString.TRUE || value === BoolString.FALSE || value.match(isIntReg) || value.match(isObjectReg))
+        res[key] = JSON.parse(value)
+      else
+        res[key] = value
 
-      res[key] = JSON.parse(env[key])
     } catch (err) {
-      error(`Check that your environment variables(${key}) follow JSON syntax rules. More infomation(${err as string})`)
+      error(`Check that your environment variables(${key}) follow JSON syntax rules. If you want to set an object or array, check that your key is enclosed in double quotes. Other infomation(${err as string})`)
     }
   })
 
