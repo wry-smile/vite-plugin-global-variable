@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useGlobSetting } from '@wry-smile/vite-plugin-global-variable/tools'
 
-const { VITE_GLOB_BOOLEAN } = useGlobSetting()
+const { VITE_GLOB_BOOLEAN, VITE_GLOB_TEST } = useGlobSetting()
 
 </script>  
  
 <template>
   {{ VITE_GLOB_BOOLEAN }}
+  {{ VITE_GLOB_TEST }}
 </template>
 
 <style scoped>

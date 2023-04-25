@@ -1,9 +1,18 @@
 import { resolve } from "path"
 import chalk from 'chalk'
 import { name, version } from '../package.json'
+import { ConfigEnv } from "vite";
 
 export function getRootPath(...dir: string[]) {
   return resolve(process.cwd(), ...dir);
+}
+
+const stringToJSONParse = (string: string) => {
+  try {
+    return JSON.parse(string)
+  } catch (error) {
+    return string
+  }
 }
 
 
@@ -11,8 +20,8 @@ export function getRootPath(...dir: string[]) {
  * Get the configuration file variable name
  * @param env
  */
-export const getGlobalConfigName = (env: Record<string, any>) => {
-  return `__PRODUCTION__${env.VITE_GLOB_APP_SHORT_NAME || 'APP'}__CONF__`
+export const getGlobalConfigName = (env: ConfigEnv, viteEnv: Record<string, any>) => {
+  return `__${env.mode.toUpperCase()}__${viteEnv.VITE_GLOB_APP_SHORT_NAME || 'APP'}__CONF__`
     .toUpperCase()
     .replace(/\s/g, '');
 };
@@ -51,26 +60,16 @@ export function useLog(prefix: string = `[${name} ${version}]`) {
   }
 }
 
-enum BoolString {
-  TRUE = 'true',
-  FALSE = 'false'
-}
+
 
 export function parseEnv(env: Record<string, string>) {
   const res: Record<string, string> = {}
   const { error } = useLog()
-  const isIntReg = /\d/g
-  const isObjectReg = /[\[\]\{\}]/g
 
   Object.keys(env).forEach(key => {
     try {
       const value = env[key]
-
-      if (value === BoolString.TRUE || value === BoolString.FALSE || value.match(isIntReg) || value.match(isObjectReg))
-        res[key] = JSON.parse(value)
-      else
-        res[key] = value
-
+      res[key] = stringToJSONParse(value)
     } catch (err) {
       error(`Check that your environment variables(${key}) follow JSON syntax rules. If you want to set an object or array, check that your key is enclosed in double quotes. Other infomation(${err as string})`)
     }

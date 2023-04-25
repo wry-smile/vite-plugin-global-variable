@@ -12,7 +12,7 @@ const defaultOptions: GlobalVariableOptions = {
 
 const { error, info } = useLog()
 
-export function globalVariable(options: GlobalVariableOptions = {}) {
+export function globalVariablePlugin(options: GlobalVariableOptions = {}) {
 
   options = { ...defaultOptions, ...options }
   const { configurationFileName, configurationName, prefixes, parser } = options
@@ -41,7 +41,7 @@ export function globalVariable(options: GlobalVariableOptions = {}) {
     closeBundle() {
       const variable = viteEnv
       const fileName = isFunction(configurationFileName) ? configurationFileName(userContext, userEnv) : configurationFileName!
-      const globalVariableName = isFunction(configurationName) ? configurationName(userContext, userEnv) : configurationName! || getGlobalConfigName(userEnv)
+      const globalVariableName = isFunction(configurationName) ? configurationName(userContext, userEnv) : configurationName! || getGlobalConfigName(userEnv, viteEnv)
       createConfig({ options: { variable, fileName, globalVariableName }, writePath: userContext.build?.outDir || getRootPath('dist') })
     },
     transformIndexHtml(html) {

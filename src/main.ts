@@ -1,2 +1,2 @@
-export { globalVariable } from './index'
+export { globalVariablePlugin } from './index'
 export { GlobalVariableOptions } from './types/index' 
