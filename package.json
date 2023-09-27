@@ -1,7 +1,7 @@
 {
   "name": "@wry-smile/vite-plugin-global-variable",
   "type": "module",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "vite-plugin, global variable",
   "scripts": {
     "dev": "tsup --watch",
