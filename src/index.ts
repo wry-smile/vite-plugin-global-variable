@@ -45,7 +45,9 @@ export function globalVariablePlugin(options: GlobalVariableOptions = {}) {
       createConfig({ options: { variable, fileName, globalVariableName }, writePath: userContext.build?.outDir || getRootPath('dist') })
     },
     transformIndexHtml(html) {
-      const configFilePath = `${userContext.base || '/'}${configurationFileName}?v=${Date.now()}`
+      let basePath = userContext.base || '/'
+      basePath = basePath.endsWith('/') && basePath !== '/' ? basePath : `${basePath}/`
+      const configFilePath = `${basePath}${configurationFileName}?v=${Date.now()}`
       info(`Begin injecting ${configurationFileName}.js into index.html.`)
       return {
         html: html,

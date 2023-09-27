@@ -7,6 +7,7 @@ import { globalVariablePlugin } from '@wry-smile/vite-plugin-global-variable'
 export default defineConfig(({ mode }) => {
 
   return {
+    base: 'test',
     plugins: [vue(), globalVariablePlugin()],
   }
 })

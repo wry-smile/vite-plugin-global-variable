@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useGlobSetting } from '@wry-smile/vite-plugin-global-variable/tools'
+import HelloWorld from './components/HelloWorld.vue';
 
 const { VITE_GLOB_BOOLEAN, VITE_GLOB_TEST } = useGlobSetting()
 
@@ -8,6 +9,7 @@ const { VITE_GLOB_BOOLEAN, VITE_GLOB_TEST } = useGlobSetting()
 <template>
   {{ VITE_GLOB_BOOLEAN }}
   {{ VITE_GLOB_TEST }}
+  <HelloWorld/>
 </template>
 
 <style scoped>
