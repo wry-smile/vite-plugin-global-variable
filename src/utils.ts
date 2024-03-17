@@ -26,6 +26,10 @@ export const getGlobalConfigName = (env: ConfigEnv, viteEnv: Record<string, any>
     .replace(/\s/g, '');
 };
 
+export function isUndefined(val: unknown): val is undefined {
+  return typeof val === 'undefined'
+}
+
 export function isFunction(val: unknown): val is Function {
   return typeof val === 'function';
 }

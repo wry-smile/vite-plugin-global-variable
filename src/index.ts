@@ -1,4 +1,4 @@
-import { getRootPath, getGlobalConfigName, isFunction, useLog, parseEnv } from "./utils";
+import { getRootPath, getGlobalConfigName, isFunction, useLog, parseEnv, isUndefined } from "./utils";
 import { CONFIGURATION_FILE_NAME, PREFIX } from "./constant";
 import { writeFileSync } from "fs";
 import { ConfigEnv, loadEnv, Plugin, UserConfig } from "vite";
@@ -45,8 +45,8 @@ export function globalVariablePlugin(options: GlobalVariableOptions = {}) {
       createConfig({ options: { variable, fileName, globalVariableName }, writePath: userContext.build?.outDir || getRootPath('dist') })
     },
     transformIndexHtml(html) {
-      let basePath = userContext.base || '/'
-      basePath = basePath.endsWith('/') && basePath !== '/' ? basePath : `${basePath}/`
+      let basePath = isUndefined(userContext.base) ? '/' : userContext.base
+      basePath = basePath.endsWith('/') ? basePath : `${basePath}/`
       const configFilePath = `${basePath}${configurationFileName}?v=${Date.now()}`
       info(`Begin injecting ${configurationFileName}.js into index.html.`)
       return {
