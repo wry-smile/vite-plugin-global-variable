@@ -1,12 +1,16 @@
-import { getRootPath, getGlobalConfigName, isFunction, useLog, parseEnv, isUndefined } from "./utils";
 import { CONFIGURATION_FILE_NAME, PREFIX } from "./constant";
 import { writeFileSync } from "fs";
 import { ConfigEnv, loadEnv, Plugin, UserConfig } from "vite";
 import { CreateConfigParams, GlobalVariableOptions } from "./types";
 import { name as pluginName } from '../package.json'
+import { useLog } from "./log";
+import { doTransformEnvName, getGlobalConfigName, parseEnv } from "./parse";
+import { getRootPath } from "./utils";
+import { join } from "path";
+import { isFunction, isObject } from "@wry-smile/utils";
 
 const defaultOptions: GlobalVariableOptions = {
-  prefixes: PREFIX,
+  prefix: PREFIX,
   configurationFileName: CONFIGURATION_FILE_NAME,
 }
 
@@ -15,7 +19,7 @@ const { error, info } = useLog()
 export function globalVariablePlugin(options: GlobalVariableOptions = {}) {
 
   options = { ...defaultOptions, ...options }
-  const { configurationFileName, configurationName, prefixes, parser } = options
+  const { configurationFileName, configurationName, prefix, parser } = options
 
   let viteEnv: Record<string, string> = {}
 
@@ -28,7 +32,7 @@ export function globalVariablePlugin(options: GlobalVariableOptions = {}) {
     config(context, env) {
       userEnv = env
       userContext = context
-      viteEnv = loadEnv(env.mode, context.envDir ? context.envDir : context.root || './', prefixes)
+      viteEnv = loadEnv(env.mode, context.envDir ? context.envDir : context.root || './', prefix)
       if (parser) {
         if (isFunction(parser))
           viteEnv = parser(viteEnv)
@@ -40,13 +44,25 @@ export function globalVariablePlugin(options: GlobalVariableOptions = {}) {
     },
     closeBundle() {
       const variable = viteEnv
-      const fileName = isFunction(configurationFileName) ? configurationFileName(userContext, userEnv) : configurationFileName!
-      const globalVariableName = isFunction(configurationName) ? configurationName(userContext, userEnv) : configurationName! || getGlobalConfigName(userEnv, viteEnv)
-      createConfig({ options: { variable, fileName, globalVariableName }, writePath: userContext.build?.outDir || getRootPath('dist') })
+      const fileName = isFunction(configurationFileName)
+        ? configurationFileName(userContext, userEnv)
+        : configurationFileName!
+      const globalVariableName = isFunction(configurationName)
+        ? configurationName(userContext, userEnv)
+        : configurationName! || getGlobalConfigName(userEnv)
+
+      createConfig({
+        writeOptions: {
+          variable,
+          fileName,
+          globalVariableName,
+          writePath: userContext.build?.outDir || getRootPath('dist')
+        },
+        pluginConfig: options
+      })
     },
     transformIndexHtml(html) {
-      let basePath = isUndefined(userContext.base) ? '/' : userContext.base
-      basePath = basePath.endsWith('/') ? basePath : `${basePath}/`
+      let basePath = join(userContext.base || '/', '/')
       const configFilePath = `${basePath}${configurationFileName}?v=${Date.now()}`
       info(`Begin injecting ${configurationFileName}.js into index.html.`)
       return {
@@ -65,12 +81,22 @@ export function globalVariablePlugin(options: GlobalVariableOptions = {}) {
 
 
 function createConfig(params: CreateConfigParams) {
-  const { options, writePath } = params
-  const { variable, globalVariableName, fileName } = options
+  const { writeOptions, pluginConfig } = params
+  const { additional, prefix, envNameToCamelCase } = pluginConfig
+  const { variable, globalVariableName, fileName, writePath } = writeOptions
   try {
     const windowConf = `window.${globalVariableName}`;
     // Ensure that the variable will not be modified 
-    const configStr = `${windowConf}=${JSON.stringify(variable)};
+    const additionalObject = isFunction(additional)
+      ? additional() || {}
+      : isObject(additional)
+        ? additional
+        : {}
+
+    let result = Object.assign(variable, additionalObject)
+    result = doTransformEnvName(result, prefix, envNameToCamelCase)
+
+    const configStr = `${windowConf}=${JSON.stringify(result)};
       Object.freeze(${windowConf});
       Object.defineProperty(window, "${globalVariableName}", {
         configurable: false,

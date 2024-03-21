@@ -41,8 +41,11 @@
     "@wry-smile/release-kit": "^1.1.0",
     "chalk": "^5.2.0",
     "eslint": "^8.34.0",
-    "tsup": "^6.6.3",
+    "tsup": "^6.7.0",
     "typescript": "^4.9.5",
     "vite": "^4.1.3"
+  },
+  "dependencies": {
+    "@wry-smile/utils": "^1.1.2"
   }
 }

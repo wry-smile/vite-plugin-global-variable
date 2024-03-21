@@ -32,7 +32,7 @@ interface GlobalVariableOptions {
      * @default VITE_GLOB_
      * @type string
      */
-    prefixes?: string;
+    prefix?: string;
     /**
      * @description Configuration file name
      * @default .app.config.js

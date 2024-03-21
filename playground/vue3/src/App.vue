@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { useGlobSetting } from '@wry-smile/vite-plugin-global-variable/tools'
+import { useGlobSetting, CamelKeys } from '@wry-smile/vite-plugin-global-variable/tools'
 import HelloWorld from './components/HelloWorld.vue';
 
 const { VITE_GLOB_BOOLEAN, VITE_GLOB_TEST } = useGlobSetting()
+console.log({ globalSetting: (useGlobSetting() as CamelKeys<ImportMetaEnv>) })
+console.log({ importMetaEnv: import.meta.env })
 
-</script>  
- 
+</script>
+
 <template>
   {{ VITE_GLOB_BOOLEAN }}
   {{ VITE_GLOB_TEST }}
-  <HelloWorld/>
+  <HelloWorld />
 </template>
 
 <style scoped>

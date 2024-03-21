@@ -7,7 +7,7 @@ export interface GlobalVariableOptions {
    * @default VITE_GLOB_
    * @type string
    */
-  prefixes?: string
+  prefix?: string
 
   /**
    * @description Configuration file name
@@ -17,8 +17,8 @@ export interface GlobalVariableOptions {
   configurationFileName?: string | ((config: UserConfig, env: ConfigEnv) => string)
 
   /**
-   * @description The configuration name mounted on the window object, you set VITE_GLOB_APP_SHORT_NAME environment variable to modify name or custom input
-   * @default __PRODUCTION__${env.VITE_GLOB_APP_SHORT_NAME || '__APP'}__CONF__
+   * @description The configuration name mounted on the window object
+   * @default __{import.env.meta.Mode}__APP__CONF__
    * @type string
    */
   configurationName?: string | ((config: UserConfig, env: ConfigEnv) => string)
@@ -29,14 +29,38 @@ export interface GlobalVariableOptions {
    * @returns Record<string, any>
    */
   parser?: (env: Record<string, string>) => Record<string, any>
+
+  /**
+   * @description  Append additional information before writing to the file
+   */
+  additional?: Record<string, any> | (() => Record<string, any>)
+
+  /**
+   * @description transform env name to camel case
+   */
+  envNameToCamelCase?: boolean | ((keyName: string) => string)
 }
 
 
 export interface CreateConfigParams {
-  options: {
+  writeOptions: {
     globalVariableName: string
     fileName: string
     variable: Record<string, any>
+    writePath: string
   }
-  writePath: string
+
+  pluginConfig: GlobalVariableOptions
 }
+
+export type SnakeToCamel<T extends string> =
+  T extends `${infer First}_${infer Rest}` ? `${First}${Capitalize<SnakeToCamel<Rest>>}` : Capitalize<T>;
+
+export type Capitalize<S extends string> = S extends `${infer First}${infer Rest}` ? `${Uppercase<First>}${Rest}` : S;
+
+export type ExcludePrefix<T extends string> = T extends `VITE_GLOB_${infer Other}` ? Other : T
+
+export type CamelKeys<SnakeKeys extends Record<string, any>> = {
+  [K in keyof SnakeKeys as Uncapitalize<SnakeToCamel<Lowercase<ExcludePrefix<K & string>>>>]: SnakeKeys[K];
+};
+ 

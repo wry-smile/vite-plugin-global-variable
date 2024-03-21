@@ -8,7 +8,8 @@ export default defineConfig([
     outDir: 'dist',
     clean: true,
     sourcemap: true,
-    external: ['vite']
+    external: ['vite'],
+    treeshake: true
   },
   {
     entry: ['./src/tools/index.ts'],
@@ -17,5 +18,6 @@ export default defineConfig([
     outDir: 'tools',
     clean: true,
     sourcemap: true,
+    treeshake: true,
   },
 ])
