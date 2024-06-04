@@ -93,8 +93,7 @@ function createConfig(params: CreateConfigParams) {
         ? additional
         : {}
 
-    let result = Object.assign(variable, additionalObject)
-    result = doTransformEnvName(result, prefix, envNameToCamelCase)
+    const result = Object.assign(variable, additionalObject)
 
     const configStr = `${windowConf}=${JSON.stringify(result)};
       Object.freeze(${windowConf});
