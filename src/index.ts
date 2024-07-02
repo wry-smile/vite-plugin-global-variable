@@ -62,7 +62,8 @@ export function globalVariablePlugin(options: GlobalVariableOptions = {}) {
       })
     },
     transformIndexHtml(html) {
-      let basePath = join(userContext.base || '/', '/')
+      let basePath = userContext.base || '/'
+      basePath  = basePath.endsWith('/') ? basePath : basePath + '/' 
       const configFilePath = `${basePath}${configurationFileName}?v=${Date.now()}`
       info(`Begin injecting ${configurationFileName}.js into index.html.`)
       return {
