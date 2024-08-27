@@ -12,16 +12,20 @@ interface UseGlobSettingParams {
   globalName?: string
   transformEnvKeyName?: boolean | ((keyName: string) => string)
   prefix?: string
+  importEnv?: ImportMetaEnv
 }
 
 
-export const useGlobSetting = (
-  params: UseGlobSettingParams =
-    { globalName: getGlobalConfigName(), prefix: PREFIX }
-) => {
-  let { globalName, transformEnvKeyName, prefix } = params
+export const useGlobSetting = (params?: UseGlobSettingParams) => {
+  let {
+    globalName = getGlobalConfigName(),
+    transformEnvKeyName,
+    prefix = PREFIX,
+    importEnv = import.meta.env
+  } = params || {}
+
   const result = import.meta.env.DEV
-    ? parseEnv(import.meta.env)
+    ? parseEnv(importEnv)
     : window[globalName as any] as unknown as ImportMetaEnv
 
   return doTransformEnvName(result, prefix, transformEnvKeyName)
