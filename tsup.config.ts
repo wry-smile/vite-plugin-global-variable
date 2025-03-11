@@ -17,7 +17,7 @@ export default defineConfig([
     dts: true,
     outDir: 'tools',
     clean: true,
-    sourcemap: true,
+    sourcemap: true, 
     treeshake: true,
   },
 ])

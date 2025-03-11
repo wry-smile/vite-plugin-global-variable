@@ -4,9 +4,8 @@ import { ConfigEnv, loadEnv, Plugin, UserConfig } from "vite";
 import { CreateConfigParams, GlobalVariableOptions } from "./types";
 import { name as pluginName } from '../package.json'
 import { useLog } from "./log";
-import { doTransformEnvName, getGlobalConfigName, parseEnv } from "./parse";
+import { getGlobalConfigName, parseEnv } from "./parse";
 import { getRootPath } from "./utils";
-import { join } from "path";
 import { isFunction, isObject } from "@wry-smile/utils";
 
 const defaultOptions: GlobalVariableOptions = {
@@ -63,7 +62,7 @@ export function globalVariablePlugin(options: GlobalVariableOptions = {}) {
     },
     transformIndexHtml(html) {
       let basePath = userContext.base || '/'
-      basePath  = basePath.endsWith('/') ? basePath : basePath + '/' 
+      basePath = basePath.endsWith('/') ? basePath : basePath + '/'
       const configFilePath = `${basePath}${configurationFileName}?v=${Date.now()}`
       info(`Begin injecting ${configurationFileName}.js into index.html.`)
       return {

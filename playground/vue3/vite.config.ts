@@ -10,11 +10,7 @@ export default defineConfig(({ mode }) => {
     base: '/test/',
     plugins: [
       vue(),
-      globalVariablePlugin({
-        additional: () => {
-       
-        }
-      })
+      globalVariablePlugin()
     ],
   }
 })

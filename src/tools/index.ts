@@ -1,6 +1,7 @@
 import { doTransformEnvName, parseEnv } from "../parse";
 import { PREFIX } from "../constant";
 import { CamelKeys, ExcludePrefix, SnakeToCamel, Capitalize } from "../types";
+import { isFunction } from "@wry-smile/utils";
 
 export const getGlobalConfigName = () => {
   return `__${import.meta.env.MODE.toUpperCase()}__APP__CONF__`
@@ -13,6 +14,7 @@ interface UseGlobSettingParams {
   transformEnvKeyName?: boolean | ((keyName: string) => string)
   prefix?: string
   importEnv?: ImportMetaEnv
+  parseEnv?: (env: Record<string, string>) => Record<string, any>
 }
 
 
@@ -21,11 +23,14 @@ export const useGlobSetting = (params?: UseGlobSettingParams) => {
     globalName = getGlobalConfigName(),
     transformEnvKeyName,
     prefix = PREFIX,
-    importEnv = import.meta.env
+    importEnv = import.meta.env,
+    parseEnv: customParseEnv
   } = params || {}
 
   const result = import.meta.env.DEV
-    ? parseEnv(importEnv)
+    ? customParseEnv && isFunction(customParseEnv)
+      ? customParseEnv(importEnv)
+      : parseEnv(importEnv)
     : window[globalName as any] as unknown as ImportMetaEnv
 
   return doTransformEnvName(result, prefix, transformEnvKeyName)
