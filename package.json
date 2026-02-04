@@ -1,51 +1,33 @@
 {
-  "name": "@wry-smile/vite-plugin-global-variable",
+  "name": "@wry-smile/global-variable-monorepo",
   "type": "module",
   "version": "1.0.7",
   "description": "vite-plugin, global variable",
-  "scripts": {
-    "dev": "tsup --watch",
-    "build": "tsup",
-    "playground": "cd ./playground/vue3 && npm run dev",
-    "release": "npm run build && npx releaseKit ./package.json && npm publish --access=public"
-  },
-  "main": "./dist/main.js",
-  "module": "./dist/main.js",
-  "types": "./dist/main.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/main.js",
-      "types": "./dist/main.d.ts"
-    },
-    "./*": "./*",
-    "./tools": {
-      "import": "./tools/index.js",
-      "types": "./tools/index.d.ts"
-    }
-  },
-  "files": [
-    "dist",
-    "tools"
-  ],
+  "author": "@wry-smile",
+  "license": "MIT",
   "keywords": [
     "vite-plugin",
     "env",
     "environment",
     "global variable"
   ],
-  "author": "@wry-smile",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/node": "^22.13.10",
-    "@wry-smile/eslint-config-vue": "^0.1.15",
-    "@wry-smile/release-kit": "^1.1.0",
-    "chalk": "^5.4.1",
-    "eslint": "^9.22.0",
-    "tsup": "^8.4.0",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.1"
+  "scripts": {
+    "build": "pnpm -F @wry-smile/vite-plugin-runtime-env build",
+    "playground": "pnpm -F @wry-smile/playground-vue3 dev",
+    "release": "pnpm -F @wry-smile/vite-plugin-runtime-env release"
   },
-  "dependencies": {
-    "@wry-smile/utils": "^1.1.2"
+  "devDependencies": {
+    "@antfu/eslint-config": "catalog:",
+    "@types/lodash.camelcase": "catalog:",
+    "@types/node": "catalog:",
+    "bumpp": "catalog:",
+    "chalk": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-format": "catalog:",
+    "lodash.camelcase": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+
   }
 }

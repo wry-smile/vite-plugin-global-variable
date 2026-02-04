@@ -1,32 +1,14 @@
-<script setup lang="ts">
-import { useGlobSetting, CamelKeys } from '@wry-smile/vite-plugin-global-variable/tools'
-import HelloWorld from './components/HelloWorld.vue';
+<script lang="ts" setup>
+import { useRuntimeConfig } from './config'
 
-const { VITE_GLOB_BOOLEAN, VITE_GLOB_TEST } = useGlobSetting()
-console.log({ globalSetting: (useGlobSetting() as CamelKeys<ImportMetaEnv>) })
-console.log({ importMetaEnv: import.meta.env })
-
+const appConfig = useRuntimeConfig(import.meta.env, import.meta.env.PROD)
 </script>
 
 <template>
-  {{ VITE_GLOB_BOOLEAN }}
-  {{ VITE_GLOB_TEST }}
-  <HelloWorld />
+  <div>
+    <div>
+      {{ appConfig.appName }}
+      {{ appConfig.appTitle }}
+    </div>
+  </div>
 </template>
-
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>

@@ -1,21 +1,23 @@
 {
-  "name": "vue3",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@wry-smile/playground-vue3",
   "type": "module",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.5.13"
+    "vue": "catalog:"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
-    "@wry-smile/vite-plugin-global-variable": "workspace:*",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.1",
-    "vue-tsc": "^2.2.8"
+    "@types/node": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vue/tsconfig": "catalog:",
+    "@wry-smile/vite-plugin-runtime-env": "workspace:*",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

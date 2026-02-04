@@ -1,0 +1,56 @@
+{
+  "name": "@wry-smile/vite-plugin-runtime-env",
+  "type": "module",
+  "version": "1.0.7",
+  "description": "vite-plugin, runtime env",
+  "author": "@wry-smile",
+  "license": "MIT",
+  "keywords": [
+    "vite-plugin",
+    "env",
+    "environment",
+    "global variable"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./vite": {
+      "types": "./dist/plugin.d.mts",
+      "import": "./dist/plugin.mjs",
+      "require": "./dist/plugin.cjs"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsdown --watch",
+    "build": "tsdown",
+    "release": "pnpm build && bumpp && npm publish --access=public"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "catalog:",
+    "@types/lodash.camelcase": "catalog:",
+    "@types/lodash.snakecase": "catalog:",
+    "@types/node": "catalog:",
+    "@wry-smile/utils": "catalog:",
+    "bumpp": "catalog:",
+    "chalk": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-format": "catalog:",
+    "lodash.camelcase": "catalog:",
+    "lodash.snakecase": "catalog:",
+    "picocolors": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}
