@@ -1,14 +1,15 @@
 # @wry-smile/vite-plugin-runtime-env
 
-A Vite plugin that exposes environment variables to your client-side code at runtime. Instead of embedding variables during the build process, this plugin generates a separate configuration file that is fetched by the browser, allowing for dynamic configuration without rebuilding your application.
+A Vite plugin for exposing selected env variables through a runtime-loaded global config file.
 
-## Features
+Instead of baking those values into your bundle at build time, the plugin:
 
-- **Runtime Configuration**: Expose environment variables to the client at runtime, not at build time.
-- **Dynamic Updates**: Change configuration without a new build. Simply update the generated config file and restart your server.
-- **Framework Agnostic**: Works with any frontend framework supported by Vite (Vue, React, Svelte, etc.).
-- **Customizable**: Flexible options to control which variables are exposed, how they are named, and more.
-- **Type-Safe**: Automatically generates TypeScript declarations for your runtime environment variables.
+- filters env keys by prefix
+- generates a standalone config file such as `_app.config.js`
+- injects that file into `index.html`
+- exposes the values on `window[globalVariableName]`
+
+The same access model works in both `vite dev` and production builds.
 
 ## Installation
 
@@ -22,179 +23,179 @@ npm install @wry-smile/vite-plugin-runtime-env -D
 
 ## Usage
 
-1.  **Configure your `.env` file**
+1. Create env variables with the runtime prefix.
 
-    Create a `.env` file (or `.env.production`, `.env.development`) in your project root. Add the environment variables you want to expose, prefixed with a specific string (default is `VITE_GLOB_`).
+```env
+VITE_GLOB_APP_NAME="My App"
+VITE_GLOB_API_URL="https://api.example.com"
+```
 
-    ```.env
-    VITE_GLOB_APP_TITLE="My Awesome App"
-    VITE_GLOB_API_URL="https://api.example.com"
-    ```
-
-2.  **Add the plugin to `vite.config.ts`**
-
-    Import and add `runtimeEnvPlugin` to your Vite config.
-
-    ```ts
-    import { runtimeEnvPlugin } from '@wry-smile/vite-plugin-runtime-env/vite'
-    import { defineConfig } from 'vite'
-
-    export default defineConfig({
-      plugins: [
-        runtimeEnvPlugin(),
-      ],
-    })
-    ```
-
-3.  **Run your Vite server or build**
-
-    The plugin will generate a config file (e.g., `_app.config.js`) in your output directory and inject a `<script>` tag into your `index.html` to load it.
-
-## Configuration Options
-
-The `runtimeEnvPlugin` accepts an optional configuration object:
+2. Register the plugin in `vite.config.ts`.
 
 ```ts
-runtimeEnvPlugin({
-  // Your options here
-})
-```
-
-### `runtimeEnvPrefix`
-
-- **Type**: `string`
-- **Default**: `'VITE*GLOB*'
-
-  The prefix for environment variables that should be exposed to the client. Only variables starting with this prefix will be processed.
-
-### `globalVariableName`
-
-- **Type**: `string`
-- **Default**: `'**APP_PROD_CONFIG**'
-
-  The name of the global variable on the `window` object where the runtime environment variables will be stored.
-
-### `configFileName`
-
-- **Type**: `string`
-- **Default**: `'_app.config.js'`
-
-  The name of the generated configuration file.
-
-### `transformRuntimEnv`
-
-- **Type**: `((env: Recordable) => Recordable) | 'camelCase' | 'snakeCase'`
-- **Default**: `undefined`
-
-  A function or a built-in transformer to modify the keys of the environment variables before they are exposed.
-  - **`'camelCase'`**: Transforms `VITE_GLOB_APP_TITLE` to `appTitle`.
-  - **`'snakeCase'`**: Transforms `VITE_GLOB_APP_TITLE` to `app_title`.
-  - **Custom Function**: Provide your own function for complex transformations.
-
-    ```ts
-    transformRuntimEnv: (env) => {
-      const newEnv = {}
-      for (const key in env) {
-        // Custom logic
-        newEnv[key.toLowerCase()] = env[key]
-      }
-      return newEnv
-    }
-    ```
-
-## Example
-
-**`.env`**
-
-```
-VITE_GLOB_APP_NAME=MyViteApp
-VITE_GLOB_API_BASE_URL=/api/v1
-```
-
-**`vite.config.ts`**
-
-```ts
-import { runtimeEnvPlugin } from '@wry-smile/vite-plugin-runtime-env/vite'
+import { runtimeEnvPlugin } from '@wry-smile/vite-plugin-runtime-env'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
     runtimeEnvPlugin({
       runtimeEnvPrefix: 'VITE_GLOB_',
+      globalVariableName: '__APP_PROD_CONFIG__',
+      configFileName: '_app.config.js',
       transformRuntimEnv: 'camelCase',
     }),
   ],
 })
 ```
 
-## Accessing Variables in Your App (Example)
+3. Read the generated global config through the exported API.
 
-To access your environment variables in a type-safe and environment-aware manner, you can create a custom hook like `useRuntimeConfig`. This abstracts away the differences between development and production. Here is a recommended implementation:
+```ts
+import { getRuntimeConfig } from '@wry-smile/vite-plugin-runtime-env/runtime'
 
-1.  **Create a configuration module**
+const config = getRuntimeConfig<{
+  appName: string
+  apiUrl: string
+}>()
 
-    Create a file (e.g., `src/config.ts`) to initialize and export your runtime configuration.
+console.log(config.appName)
+console.log(config.apiUrl)
+```
 
-    ```ts
-    import type { CamelCaseRuntimeEnv } from '@wry-smile/vite-plugin-runtime-env'
-    // src/config.ts
-    import { camelCase } from '@wry-smile/vite-plugin-runtime-env'
+If you changed `globalVariableName`, pass it explicitly:
 
-    // The hook automatically handles development and production environments.
-    export function useRuntimeConfig<T extends ImportMetaEnv>(env: T, isProduction: boolean) {
-      const config = isProduction
-        ? window.__APP_PROD_CONFIG__
-        : Object.fromEntries(
-          Object.entries(env).map(([key, value]) => [camelCase(key.replace('VITE_GLOB_', '')), value]),
-        ) as CamelCaseRuntimeEnv<AppRuntimeEnv>
+```ts
+const config = getRuntimeConfig({
+  globalVariableName: '__CUSTOM_RUNTIME_CONFIG__',
+})
+```
 
-      // do something
+## How It Works
 
-      return config
+- In `vite dev`, the plugin serves the config file from the dev server.
+- In `vite build`, the plugin emits the config file into the output directory.
+- In both cases, the plugin injects a `<script>` tag into `index.html`.
+
+That lets you replace the generated config file after deployment without rebuilding your frontend bundle.
+
+## Configuration
+
+### `runtimeEnvPrefix`
+
+- Type: `string`
+- Default: `'VITE_GLOB_'`
+
+Only env keys starting with this prefix are exposed.
+
+### `globalVariableName`
+
+- Type: `string`
+- Default: `'__APP_PROD_CONFIG__'`
+
+The global key used on `window[...]`.
+
+### `configFileName`
+
+- Type: `string`
+- Default: `'_app.config.js'`
+
+The emitted runtime config filename.
+
+### `transformRuntimEnv`
+
+- Type: `((env: Recordable) => Recordable) | 'camelCase' | 'snakeCase'`
+- Default: `undefined`
+
+Transforms the exposed object keys before writing them to the runtime config.
+
+```ts
+runtimeEnvPlugin({
+  transformRuntimEnv: 'camelCase',
+})
+```
+
+With `camelCase`:
+
+```env
+VITE_GLOB_APP_NAME=MyApp
+VITE_GLOB_API_BASE_URL=/api
+```
+
+becomes:
+
+```ts
+const config = getRuntimeConfig<{
+  appName: string
+  apiBaseUrl: string
+}>()
+
+console.log(config.appName) // MyApp
+console.log(config.apiBaseUrl) // /api
+```
+
+You can also provide a custom transformer:
+
+```ts
+runtimeEnvPlugin({
+  transformRuntimEnv: (env) => {
+    const result: Record<string, string> = {}
+
+    for (const [key, value] of Object.entries(env)) {
+      result[key.toLowerCase()] = value
     }
-    ```
 
-2.  **Use it in your application**
+    return result
+  },
+})
+```
 
-    Now you can import `runtimeConfig` anywhere in your app.
+## TypeScript
 
-    ```ts
-    import { useRuntimeConfig } from './config'
+The plugin does not generate TypeScript declarations automatically. Define them in your app.
 
-    const config = useRuntimeConfig(import.meta.env, import.meta.env.MODE)
-    console.log('API URL:', config.apiUrl)
-    console.log('App Title:', config.appTitle)
-    ```
+```ts
+// vite-env.d.ts
+interface ImportMetaEnv extends AppRuntimeEnv {}
 
-## TypeScript Integration
+interface AppRuntimeEnv {
+  readonly VITE_GLOB_APP_NAME: string
+  readonly VITE_GLOB_API_URL: string
+}
+```
 
-To get full type-safety, you need to define the types for your environment variables.
+```ts
+// global.d.ts
+import type { CamelCaseRuntimeEnv } from '@wry-smile/vite-plugin-runtime-env/runtime'
 
-1.  **Update Type Definitions**
+declare global {
+  interface Window {
+    __APP_PROD_CONFIG__: CamelCaseRuntimeEnv<AppRuntimeEnv>
+  }
+}
 
-    Create or update a type declaration file (e.g., `src/vite-env.d.ts`) to define the shape of your runtime variables. Make sure to use the `globalVariableName` you configured in `vite.config.ts` (default is `__APP_PROD_CONFIG__`).
+export {}
+```
 
-    ```ts
-    // vite-env.d.ts
-    interface ImportMetaEnv extends AppRuntimeEnv {
+Then read the config with the helper:
 
-    }
+```ts
+import type { CamelCaseRuntimeEnv } from '@wry-smile/vite-plugin-runtime-env/runtime'
+import { getRuntimeConfig } from '@wry-smile/vite-plugin-runtime-env/runtime'
 
-    interface AppRuntimeEnv {
-      readonly VITE_GLOB_APP_NAME: string
-      readonly VITE_GLOB_APP_TITLE: string
-    }
-    ```
+const config = getRuntimeConfig<CamelCaseRuntimeEnv<AppRuntimeEnv>>()
+```
 
-    ```ts
-    // global.d.ts
-    import type { CamelCaseRuntimeEnv } from '@wry-smile/vite-plugin-runtime-env'
+## API Exports
 
-    declare global {
-      interface Window {
-        __APP_PROD_CONFIG__: CamelCaseRuntimeEnv<ImportMetaEnv>
-      }
-    }
+Use the package root for the Vite plugin:
 
-    export {}
-    ```
+```ts
+import { runtimeEnvPlugin } from '@wry-smile/vite-plugin-runtime-env'
+```
+
+Use `@wry-smile/vite-plugin-runtime-env/runtime` in browser code:
+
+```ts
+import type { CamelCaseRuntimeEnv, SnakeCaseRuntimeEnv } from '@wry-smile/vite-plugin-runtime-env/runtime'
+import { camelCase, getRuntimeConfig, snakeCase } from '@wry-smile/vite-plugin-runtime-env/runtime'
+```

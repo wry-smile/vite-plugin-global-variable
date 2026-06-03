@@ -1,4 +1,4 @@
-import type { CamelCaseRuntimeEnv } from '@wry-smile/vite-plugin-runtime-env'
+import type { CamelCaseRuntimeEnv } from '@wry-smile/vite-plugin-runtime-env/runtime'
 
 declare global {
   interface Window {

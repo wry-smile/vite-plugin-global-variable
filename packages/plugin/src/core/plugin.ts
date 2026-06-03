@@ -1,5 +1,5 @@
 import type { Recordable } from '@wry-smile/utils'
-import type { Logger, Plugin, ResolvedConfig } from 'vite'
+import type { Logger, Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import type { PluginConfig, ResolvedPluginConfig } from '../types'
 import { isFunction, isObject, isString } from '@wry-smile/utils'
 import picocolors from 'picocolors'
@@ -74,10 +74,9 @@ function getRuntimeEnv(userConfig: ResolvedConfig, pluginConfig: ResolvedPluginC
   const { runtimeEnvPrefix, transformRuntimEnv } = pluginConfig
 
   const runtimeEnv: Recordable = {}
-  const reg = new RegExp(`^(${runtimeEnvPrefix})`)
 
   Object.entries(userEnv).forEach(([key, value]) => {
-    if (reg.test(key)) {
+    if (key.startsWith(runtimeEnvPrefix)) {
       runtimeEnv[key] = value
     }
   })
@@ -88,7 +87,7 @@ function getRuntimeEnv(userConfig: ResolvedConfig, pluginConfig: ResolvedPluginC
 function getRuntimeEnvCodeSource(userConfig: ResolvedConfig, pluginConfig: ResolvedPluginConfig) {
   const runtimeEnv = getRuntimeEnv(userConfig, pluginConfig)
   const { globalVariableName } = pluginConfig
-  const windowVariable = `window.${globalVariableName}`
+  const windowVariable = `window[${JSON.stringify(globalVariableName)}]`
 
   let source = `${windowVariable}=${JSON.stringify(runtimeEnv)};`
 
@@ -101,6 +100,43 @@ function getRuntimeEnvCodeSource(userConfig: ResolvedConfig, pluginConfig: Resol
   `.replaceAll(/\s/g, '')
 
   return source
+}
+
+function getRuntimeConfigPublicPath(base: string, configFileName: string) {
+  if (/^[a-z][a-z\d+.-]*:\/\//i.test(base))
+    return new URL(configFileName, base.endsWith('/') ? base : `${base}/`).toString()
+
+  const separator = !base || base.endsWith('/') ? '' : '/'
+
+  return `${base}${separator}${configFileName}`
+}
+
+function getRuntimeConfigRequestPath(base: string, configFileName: string) {
+  return getRequestPathname(getRuntimeConfigPublicPath(base, configFileName))
+}
+
+function getRequestPathname(url?: string) {
+  if (!url)
+    return ''
+
+  return new URL(url, 'http://localhost').pathname
+}
+
+function setupDevServer(server: ViteDevServer, config: ResolvedConfig, pluginConfig: ResolvedPluginConfig, source: string) {
+  const runtimeConfigPath = getRuntimeConfigRequestPath(config.base, pluginConfig.configFileName)
+
+  server.middlewares.use((req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD')
+      return next()
+
+    if (getRequestPathname(req.url) !== runtimeConfigPath)
+      return next()
+
+    res.statusCode = 200
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8')
+    res.setHeader('Cache-Control', 'no-store')
+    res.end(req.method === 'HEAD' ? undefined : source)
+  })
 }
 
 export function runtimeEnvPlugin(config?: PluginConfig): Plugin {
@@ -117,6 +153,9 @@ export function runtimeEnvPlugin(config?: PluginConfig): Plugin {
       logger = userConfig.logger
       pluginConfig = resolvePluginConfig(logger, config)
       source = getRuntimeEnvCodeSource(userConfig, pluginConfig)
+    },
+    configureServer(server) {
+      setupDevServer(server, resolvedConfig, pluginConfig, source)
     },
     generateBundle() {
       try {
@@ -138,7 +177,7 @@ export function runtimeEnvPlugin(config?: PluginConfig): Plugin {
       const { configFileName } = pluginConfig
       const { base } = resolvedConfig
 
-      const runtimeConfigSrc = `${base}/${configFileName}?${query}`.replaceAll(/\/\//g, '/')
+      const runtimeConfigSrc = `${getRuntimeConfigPublicPath(base, configFileName)}?${query}`
 
       return {
         html,
