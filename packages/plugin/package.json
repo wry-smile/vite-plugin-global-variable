@@ -15,16 +15,18 @@
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.mjs"
     },
-    "./vite": {
-      "types": "./dist/plugin.d.mts",
-      "import": "./dist/plugin.mjs",
-      "require": "./dist/plugin.cjs"
+    "./runtime": {
+      "types": "./dist/runtime.d.mts",
+      "import": "./dist/runtime.mjs",
+      "require": "./dist/runtime.cjs",
+      "default": "./dist/runtime.mjs"
     }
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "files": [
     "dist"

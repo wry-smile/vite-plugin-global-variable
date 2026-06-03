@@ -2,8 +2,8 @@ import { defineConfig } from 'tsdown'
 
 export default defineConfig({
   entry: {
-    plugin: './src/plugin.ts',
     index: './src/index.ts',
+    runtime: './src/runtime.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,

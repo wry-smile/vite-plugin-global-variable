@@ -1,5 +1,5 @@
 import vue from '@vitejs/plugin-vue'
-import { runtimeEnvPlugin } from '@wry-smile/vite-plugin-runtime-env/vite'
+import { runtimeEnvPlugin } from '@wry-smile/vite-plugin-runtime-env'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
