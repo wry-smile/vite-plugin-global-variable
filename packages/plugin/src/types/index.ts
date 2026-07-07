@@ -2,6 +2,24 @@ import type { Recordable } from '@wry-smile/utils'
 import type { BUILTIN_TRANSFORM_RUNTIME_ENV_FN } from '../constant'
 
 export type BuiltinTransformRuntimeEnvFn = (typeof BUILTIN_TRANSFORM_RUNTIME_ENV_FN)[number]
+export type RuntimeEnvValidator = (env: Recordable) => void
+export type ResolvedRuntimeEnvValidator = (env: Recordable) => Recordable
+export type RuntimeScriptAttributeValue = boolean | string | null | undefined
+export type RuntimeScriptAttributes = Record<string, RuntimeScriptAttributeValue>
+export interface RuntimeEnvSchemaParseSuccess<RuntimeEnv = Recordable> {
+  success: true
+  data: RuntimeEnv
+}
+
+export interface RuntimeEnvSchemaParseFailure {
+  success: false
+  error?: unknown
+}
+
+export interface RuntimeEnvSchemaLike<RuntimeEnv = Recordable> {
+  parse?: (env: Recordable) => RuntimeEnv
+  safeParse?: (env: Recordable) => RuntimeEnvSchemaParseSuccess<RuntimeEnv> | RuntimeEnvSchemaParseFailure
+}
 
 export interface PluginConfig {
   /**
@@ -23,6 +41,22 @@ export interface PluginConfig {
   configFileName?: string
 
   /**
+   * @description parse env string values to native values before transform
+   * @default true
+   */
+  parseRuntimeEnvValues?: boolean
+
+  /**
+   * @description validate the final runtime config before it is written
+   */
+  validateRuntimeEnv?: RuntimeEnvValidator | RuntimeEnvSchemaLike
+
+  /**
+   * @description extra attributes applied to the injected runtime config script tag
+   */
+  scriptAttributes?: RuntimeScriptAttributes
+
+  /**
    * @description
    * @param env
    * @returns
@@ -32,6 +66,8 @@ export interface PluginConfig {
 
 export interface ResolvedPluginConfig extends Required<PluginConfig> {
   transformRuntimEnv: ((env: Recordable) => Recordable)
+  validateRuntimeEnv: ResolvedRuntimeEnvValidator
+  scriptAttributes: RuntimeScriptAttributes
 }
 
 export type SnakeToCamel<T extends string>
