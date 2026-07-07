@@ -7,6 +7,13 @@ export type {
   Capitalize,
   ExcludePrefix,
   PluginConfig,
+  ResolvedRuntimeEnvValidator,
+  RuntimeEnvSchemaLike,
+  RuntimeEnvSchemaParseFailure,
+  RuntimeEnvSchemaParseSuccess,
+  RuntimeEnvValidator,
+  RuntimeScriptAttributes,
+  RuntimeScriptAttributeValue,
   SnakeCaseRuntimeEnv,
   SnakeToCamel,
 } from './types'

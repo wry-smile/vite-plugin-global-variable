@@ -34,6 +34,7 @@
   "scripts": {
     "dev": "tsdown --watch",
     "build": "tsdown",
+    "test": "pnpm build && node --test test/**/*.test.mjs",
     "release": "pnpm build && bumpp && npm publish --access=public"
   },
   "dependencies": {

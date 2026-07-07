@@ -13,6 +13,7 @@
   ],
   "scripts": {
     "build": "pnpm -F @wry-smile/vite-plugin-runtime-env build",
+    "test": "pnpm -F @wry-smile/vite-plugin-runtime-env test",
     "playground": "pnpm -F @wry-smile/playground-vue3 dev",
     "release": "pnpm -F @wry-smile/vite-plugin-runtime-env release"
   },
