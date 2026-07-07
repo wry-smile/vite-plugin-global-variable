@@ -1,7 +1,7 @@
 {
   "name": "@wry-smile/vite-plugin-runtime-env",
   "type": "module",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "vite-plugin, runtime env",
   "author": "@wry-smile",
   "license": "MIT",
